@@ -1,0 +1,3 @@
+# VoiceTimeCounter
+基于Xamarin.Forms开发的语音倒计时APP
+360市场和安智市场都能下载到这款APP，想看效果的话可以下载试试。
