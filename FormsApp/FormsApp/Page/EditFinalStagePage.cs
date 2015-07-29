@@ -1,0 +1,268 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using FormsApp.Model;
+using FormsApp.Service;
+using FormsApp.View;
+using Xamarin.Forms;
+
+namespace FormsApp.Page
+{
+    internal class EditFinalStagePage : ContentPage
+    {
+        private int Hours;
+        private int Minutes;
+        private int Seconds;
+        private int VoiceInterval;
+        private TimeSet TimeSet { set; get; }
+        private Stage ViewModel { set; get; }
+
+        public EditFinalStagePage(TimeSet timeSet, Stage stage)
+        {
+            Title = "修改冲刺阶段";
+            BackgroundColor = Color.FromHex("#eee");
+            TimeSet = timeSet;
+            ViewModel = stage;
+            BindingContext = ViewModel;
+            var ts = TimeSpan.FromSeconds(ViewModel.StagePoint);
+            Hours = ts.Hours;
+            Minutes = ts.Minutes;
+            Seconds = ts.Seconds;
+            InitView();
+        }
+
+        private void InitView()
+        {
+            //Dictionary<string, int> hours = new Dictionary<string, int>();
+            //for (int i = 0; i <= 23; i++)
+            //{
+            //    hours.Add(i + "小时", i);
+            //}
+            Dictionary<string, int> minutes = new Dictionary<string, int>();
+            for (int i = 0; i <= 59; i++)
+            {
+                minutes.Add(i + "分钟", i);
+            }
+            Dictionary<string, int> seconds = new Dictionary<string, int>();
+            for (int i = 0; i <= 60; i++)
+            {
+                seconds.Add(i + "秒钟", i);
+            }
+            Dictionary<string, int> readySeconds = new Dictionary<string, int>();
+            for (int i = 1; i <= 5; i++)
+            {
+                readySeconds.Add(i + "秒钟", i);
+            }
+            //Picker hourPicker = new Picker()
+            //{
+            //    Title = "小时",
+            //    HorizontalOptions = LayoutOptions.FillAndExpand
+            //};
+            //foreach (var hour in hours)
+            //{
+            //    hourPicker.Items.Add(hour.Key);
+            //}
+            //hourPicker.SelectedIndex = hours.ToList().FindIndex(w => w.Value == Hours);
+            //hourPicker.SelectedIndexChanged += delegate
+            //{
+            //    if (hourPicker.SelectedIndex == -1)
+            //    {
+            //        Hours = 0;
+            //    }
+            //    else
+            //    {
+            //        Hours = hours.ToArray()[hourPicker.SelectedIndex].Value;
+            //    }
+            //};
+            Picker minutePicker = new Picker()
+            {
+                Title = "分钟",
+                HorizontalOptions = LayoutOptions.FillAndExpand
+            };
+            foreach (var minute in minutes)
+            {
+                minutePicker.Items.Add(minute.Key);
+            }
+            minutePicker.SelectedIndex = minutes.ToList().FindIndex(w => w.Value == Minutes);
+            minutePicker.SelectedIndexChanged += delegate
+            {
+                if (minutePicker.SelectedIndex == -1)
+                {
+                    Minutes = 0;
+                }
+                else
+                {
+                    Minutes = minutes.ToArray()[minutePicker.SelectedIndex].Value;
+                }
+            };
+            Picker secondPicker = new Picker()
+            {
+                Title = "秒钟",
+                HorizontalOptions = LayoutOptions.FillAndExpand
+
+            };
+            foreach (var second in seconds)
+            {
+                secondPicker.Items.Add(second.Key);
+            }
+            secondPicker.SelectedIndex = seconds.ToList().FindIndex(w => w.Value == Seconds);
+            secondPicker.SelectedIndexChanged += delegate
+            {
+                if (secondPicker.SelectedIndex == -1)
+                {
+                    Seconds = 0;
+                }
+                else
+                {
+                    Seconds = seconds.ToArray()[secondPicker.SelectedIndex].Value;
+                }
+            };
+
+
+
+            Picker readySecondPicker = new Picker()
+            {
+                Title = "秒钟",
+                IsEnabled = false
+            };
+            foreach (var second in readySeconds)
+            {
+                readySecondPicker.Items.Add(second.Key);
+            }
+            readySecondPicker.SelectedIndex = readySeconds.ToList().FindIndex(w => w.Value == ViewModel.VoiceInterval);
+            readySecondPicker.SelectedIndexChanged += delegate
+            {
+                if (readySecondPicker.SelectedIndex == -1)
+                {
+                    VoiceInterval = readySeconds.ToArray()[0].Value;
+                    ;
+                }
+                else
+                {
+                    VoiceInterval = readySeconds.ToArray()[readySecondPicker.SelectedIndex].Value;
+                }
+                //ViewModel.VoiceInterval = VoiceInterval;
+            };
+
+            PanelView panelView1 = new PanelView()
+            {
+                Text = "阶段时间点",
+                TextColor = Color.FromHex("999"),
+                UnderLineColor = Color.FromHex("999"),
+                Content = new StackLayout()
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    Children =
+                    {
+                        //hourPicker, 
+                        minutePicker, secondPicker
+                    }
+                }
+            };
+            PanelView panelView2 = new PanelView()
+            {
+                Text = "播报间隔时间",
+                TextColor = Color.FromHex("999"),
+                UnderLineColor = Color.FromHex("999"),
+                Content = readySecondPicker
+            };
+
+            Button saveButton = new Button()
+            {
+
+                HeightRequest = 40,
+                Text = "保存",
+                BackgroundColor = Consts.ThemeColor,
+                TextColor = Color.White,
+            };
+            saveButton.Clicked += saveButton_Clicked;
+            LineView line0 = new LineView()
+            {
+                HeightRequest = 10,
+                HorizontalOptions = LayoutOptions.FillAndExpand,
+                //BackgroundColor = Color.FromHex("#f7f7f7")
+            };
+            LineView line1 = new LineView()
+            {
+                HeightRequest = 8,
+                HorizontalOptions = LayoutOptions.FillAndExpand,
+                //BackgroundColor = Color.FromHex("#f7f7f7")
+            };
+            LineView line2 = new LineView()
+            {
+                HeightRequest = 8,
+                HorizontalOptions = LayoutOptions.FillAndExpand,
+                //BackgroundColor = Color.FromHex("#f7f7f7")
+            };
+
+            var scrollView = new ScrollView()
+            {
+                Content = new StackLayout()
+            {
+                Orientation = StackOrientation.Vertical,
+                Children = {line0, panelView1, line1, panelView2, line2, new StackLayout()
+                {
+                    Padding = 10,Children = {saveButton}
+                } }
+            }
+            };
+            Content = scrollView;
+        }
+
+        private void saveButton_Clicked(object sender, System.EventArgs e)
+        {
+            var uds = DependencyService.Get<Acr.XamForms.UserDialogs.IUserDialogService>();
+            var toast = DependencyService.Get<IToast>();
+            //TimeSpan ts = new TimeSpan(0, Hours, Minutes, Seconds);
+            //if (ts.TotalSeconds < 1)
+            //{
+            //    uds.Toast("请确定距结束时间时长", 2);
+            //    return;
+            //}
+            //if (ts.TotalSeconds > TimeSet.Duration)
+            //{
+            //    uds.Toast("距结束点时长不能超过方案的总时长", 2);
+            //    return;
+            //}
+            TimeSpan ts = new TimeSpan(0, Hours, Minutes, Seconds);
+            if (ts.TotalSeconds < 1)
+            {
+                toast.Show("请确定阶段时间点");
+                //uds.Toast("请确定阶段时间点", 2);
+                return;
+            }
+            if (ts.TotalSeconds > TimeSet.Duration)
+            {
+                toast.Show("阶段时间点不能超过方案的总时长");
+                //uds.Toast("阶段时间点不能超过方案的总时长", 2);
+                return;
+            }
+            if (TimeSet.ObservableStages.Count(w => w != ViewModel && w.StagePoint == (int)ts.TotalSeconds) > 0)
+            {
+                toast.Show("已存在此阶段时间点");
+                //uds.Toast("已存在此阶段时间点", 2);
+                return;
+            }
+            if (TimeSet.ObservableStages.Any(w => w != ViewModel && w.StagePoint < (int)ts.TotalSeconds))
+            {
+                toast.Show("冲刺阶段时间点不能大于任何其他阶段时间点");
+                //uds.Toast("冲刺阶段时间点不能大于任何其他阶段时间点", 2);
+                return;
+            }
+            ViewModel.StagePoint = (int)ts.TotalSeconds;
+            //if (VoiceInterval > 0)
+            //    ViewModel.VoiceInterval = VoiceInterval;
+            if (ViewModel.VoiceInterval == 0)
+            {
+                toast.Show("请确定播报间隔时间");
+                //uds.Toast("请确定播报间隔时间", 2);
+                return;
+            }
+            //TimeSet.AddStage(ViewModel);
+
+            Navigation.PopAsync();
+
+        }
+    }
+
+}
